@@ -3,12 +3,12 @@
             [quo.core :as quo]
             [re-frame.core :as re-frame]
             [reagent.core :as reagent]
-            [status-im.i18n :as i18n]
-            [status-im.ui.screens.wallet.events :as wallet.events]
+            [status-im.i18n.i18n :as i18n]
+            [status-im.wallet.core :as wallet.events]
             [status-im.ui.components.buy-crypto :as buy-crypto]
             [status-im.ui.components.chat-icon.screen :as chat-icon]
             [status-im.ui.components.colors :as colors]
-            [status-im.ui.components.icons.vector-icons :as icons]
+            [status-im.ui.components.icons.icons :as icons]
             [status-im.ui.components.list.views :as list]
             [status-im.ui.components.react :as react]
             [status-im.ui.screens.wallet.accounts.sheets :as sheets]
@@ -84,11 +84,10 @@
 (views/defview assets []
   (views/letsubs [{:keys [tokens]} [:wallet/all-visible-assets-with-values]
                   currency [:wallet/currency]]
-    [list/flat-list {:data               tokens
-                     :default-separator? false
-                     :key-fn             :name
-                     :render-data        (:code currency)
-                     :render-fn          render-asset}]))
+    [:<>
+     (for [item tokens]
+       ^{:key (:name item)}
+       [render-asset item nil nil (:code currency)])]))
 
 (views/defview send-button []
   (views/letsubs [account [:multiaccount/default-account]]
@@ -206,23 +205,22 @@
                            :on-close #(re-frame/dispatch [::wallet.events/hide-buy-crypto])}]])))
 
 (defn accounts-overview []
-  (fn []
-    (let [mnemonic @(re-frame/subscribe [:mnemonic])]
-      [react/view {:flex 1}
-       [quo/animated-header
-        {:extended-header   total-value
-         :use-insets        true
-         :right-accessories [{:on-press            #(re-frame/dispatch
-                                                     [::qr-scanner/scan-code
-                                                      {:handler :wallet.send/qr-scanner-result}])
-                              :icon                :main-icons/qr
-                              :accessibility-label :accounts-qr-code}
-                             {:on-press            #(re-frame/dispatch [:bottom-sheet/show-sheet
-                                                                        {:content (sheets/accounts-options mnemonic)}])
-                              :icon                :main-icons/more
-                              :accessibility-label :accounts-more-options}]}
-        [accounts]
-        [assets]
-        [buy-crypto]
-        [react/view {:height 68}]]
-       [send-button]])))
+  (let [mnemonic @(re-frame/subscribe [:mnemonic])]
+    [react/view {:flex 1}
+     [quo/animated-header
+      {:extended-header   total-value
+       :use-insets        true
+       :right-accessories [{:on-press            #(re-frame/dispatch
+                                                   [::qr-scanner/scan-code
+                                                    {:handler :wallet.send/qr-scanner-result}])
+                            :icon                :main-icons/qr
+                            :accessibility-label :accounts-qr-code}
+                           {:on-press            #(re-frame/dispatch [:bottom-sheet/show-sheet
+                                                                      {:content (sheets/accounts-options mnemonic)}])
+                            :icon                :main-icons/more
+                            :accessibility-label :accounts-more-options}]}
+      [accounts]
+      [assets]
+      [buy-crypto]
+      [react/view {:height 68}]]
+     [send-button]]))

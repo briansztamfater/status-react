@@ -3,8 +3,8 @@
             [quo.design-system.colors :as colors]
             [quo.core :as quo]
             [status-im.react-native.resources :as resources]
-            [status-im.ui.components.icons.vector-icons :as vector-icons]
-            [status-im.i18n :as i18n]))
+            [status-im.ui.components.icons.icons :as icons]
+            [status-im.i18n.i18n :as i18n]))
 
 (defn banner [{:keys [on-close on-open]}]
   [rn/view {:style {:border-radius    16
@@ -31,4 +31,4 @@
       " →"]]]
    [rn/touchable-opacity {:style    {:padding 4}
                           :on-press on-close}
-    [vector-icons/icon :main-icons/close-circle {:color (colors/get-color :icon-02)}]]])
+    [icons/icon :main-icons/close-circle {:color (colors/get-color :icon-02)}]]])
